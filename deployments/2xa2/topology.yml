@@ -1,0 +1,10 @@
+# 拓扑层：两台 Atlas 800 A2，每台 8 卡。
+services:
+  inference:
+    environment:
+      DP_SIZE: "2"
+      DP_LOCAL_SIZE: "1"
+      TP_SIZE: "8"
+      DP_RPC_PORT: "12321"
+      API_SERVER_COUNT: "1"
+

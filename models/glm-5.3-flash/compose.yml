@@ -1,0 +1,8 @@
+services:
+  inference:
+    image: quay.io/ascend/vllm-ascend:glm-5.3-flash
+    environment:
+      VLLM_MODEL_CONFIG: /opt/multideploy/model.yml
+    volumes:
+      - ./models/glm-5.3-flash/vllm.yml:/opt/multideploy/model.yml:ro
+

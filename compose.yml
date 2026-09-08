@@ -1,0 +1,52 @@
+services:
+  inference:
+    container_name: ${CONTAINER_NAME:-vllm-inference}
+    hostname: ${NODE_NAME}
+    network_mode: host
+    ipc: host
+    shm_size: 500gb
+    privileged: true
+    restart: always
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
+        max-file: "5"
+    entrypoint: ["bash", "/opt/multideploy/node-entrypoint.sh"]
+    environment:
+      NODE_RANK: ${NODE_RANK}
+      NODE_IP: ${NODE_IP}
+      HEAD_IP: ${HEAD_IP}
+      EXPECTED_NIC: ${EXPECTED_NIC:-}
+      MODEL_DIR: /models/current
+      PORT: ${PORT:-8080}
+      SERVICE_START_TIMEOUT: ${SERVICE_START_TIMEOUT:-3600}
+      HEALTH_INTERVAL: ${HEALTH_INTERVAL:-30}
+      HEALTH_FAILURE_THRESHOLD: ${HEALTH_FAILURE_THRESHOLD:-3}
+    devices:
+      - /dev/davinci0
+      - /dev/davinci1
+      - /dev/davinci2
+      - /dev/davinci3
+      - /dev/davinci4
+      - /dev/davinci5
+      - /dev/davinci6
+      - /dev/davinci7
+      - /dev/davinci_manager
+      - /dev/devmm_svm
+      - /dev/hisi_hdc
+    volumes:
+      - /usr/local/Ascend/driver:/usr/local/Ascend/driver:ro
+      - /usr/local/Ascend/firmware:/usr/local/Ascend/firmware:ro
+      - /usr/local/sbin:/usr/local/sbin:ro
+      - /etc/hccn.conf:/etc/hccn.conf:ro
+      - ${MODEL_HOST_PATH}:/models/current:ro
+      - ${LOG_HOST_PATH:-/data/logs/glm53-flash}:/data/logs
+      - ./scripts/node-entrypoint.sh:/opt/multideploy/node-entrypoint.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "if [ \"$$NODE_RANK\" = 0 ]; then python3 -c \"import urllib.request; assert urllib.request.urlopen('http://127.0.0.1:$$PORT/health',timeout=5).status == 200\"; else pgrep -f '[v]llm serve' >/dev/null; fi"]
+      interval: 30s
+      timeout: 8s
+      retries: 3
+      start_period: 30m
