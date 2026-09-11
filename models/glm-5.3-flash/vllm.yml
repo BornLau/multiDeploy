@@ -1,5 +1,7 @@
 # vLLM 原生配置文件。普通值、开关、对象和数组都直接使用 YAML。
-served-model-name: glm
+served-model-name: glm-5.3-flash
+enable-prefix-caching: true
+enable-prompt-tokens-details: true
 max-model-len: 133120
 max-num-seqs: 128
 max-num-batched-tokens: 8192
@@ -21,4 +23,3 @@ compilation-config:
 tool-call-parser: glm47
 reasoning-parser: glm45
 enable-auto-tool-choice: true
-
