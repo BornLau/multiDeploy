@@ -1,0 +1,31 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: multideploy-prometheus
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "0.0.0.0:9090:9090"
+
+  dashboard:
+    build: ./dashboard
+    container_name: multideploy-dashboard
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    environment:
+      PROMETHEUS_URL: http://prometheus:9090
+      REFRESH_SECONDS: "30"
+    ports:
+      - "0.0.0.0:3000:3000"
+
+volumes:
+  prometheus-data:
